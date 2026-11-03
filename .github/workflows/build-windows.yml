@@ -1,0 +1,29 @@
+name: Build Windows VST3
+
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release --parallel
+
+      - name: Collect
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force out | Out-Null
+          Copy-Item -Recurse build/Driftwood_artefacts/Release/VST3/Driftwood.vst3 out/
+          Copy-Item build/Driftwood_artefacts/Release/Standalone/Driftwood.exe out/
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Driftwood-Windows-VST3
+          path: out/
